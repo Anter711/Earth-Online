@@ -101,6 +101,15 @@
             border-radius: 8px;
             cursor: pointer;
         }
+        .submit-btn {
+            background: #ffd700;
+            color: #000;
+            font-weight: bold;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+        }
         .single-btn-row{
             display:flex;
             justify-content:center;
@@ -276,34 +285,32 @@ let userResult = new Array(60).fill(false);
 userResult[0] = true;
 let userName = "";
 
-// 全局统计（跨设备）
-const STATS_URL = "https://api.jsonbin.io/v3/b/67f1234567890abcdef12345";
-const API_KEY = "$2b$10$XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX";
+// 全局统计
 let globalData = {
   totalUsers: 0,
   countData: Array(60).fill(0),
   allScores: []
 };
 
-// 读取全局数据
+// 读取统计
 async function loadGlobal() {
   try {
-    let res = await fetch(STATS_URL, {
-      headers: { "X-Master-Key": API_KEY }
+    let res = await fetch("https://api.jsonbin.io/v3/b/67f45c16ad19ca0189e6cc9f", {
+      headers: { "X-Master-Key": "$2b$10$LjqgUxkK6d0JnV5d00eXJuXs8t9aG5t2a1Q2l3z4x5a6s7d8f9g0h" }
     });
     let json = await res.json();
     if (json.record) globalData = json.record;
   } catch (e) {}
 }
 
-// 保存全局数据
+// 保存统计
 async function saveGlobal() {
   try {
-    await fetch(STATS_URL, {
+    await fetch("https://api.jsonbin.io/v3/b/67f45c16ad19ca0189e6cc9f", {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
-        "X-Master-Key": API_KEY
+        "X-Master-Key": "$2b$10$LjqgUxkK6d0JnV5d00eXJuXs8t9aG5t2a1Q2l3z4x5a6s7d8f9g0h"
       },
       body: JSON.stringify(globalData)
     });
@@ -326,21 +333,55 @@ function renderQues() {
   let item = achData[nowIndex];
   let c = document.getElementById("qContainer");
 
-  let btnHtml = nowIndex === 0
-    ? `<div class="single-btn-row"><button class="opt-btn yes-btn single-yes" onclick="selectYes()">确认达成</button></div>`
-    : `<div class="btn-row"><button class="opt-btn yes-btn" onclick="selectYes()">已达成</button><button class="opt-btn no-btn" onclick="selectNo()">未达成</button></div>`;
+  // 最后一题：显示提交按钮
+  if (nowIndex === 59) {
+    c.innerHTML = `
+    <div class="q-box-wrapper">
+      <div class="q-box">
+        <div class="q-title">${item.name}</div>
+        <div class="q-desc">${item.desc}</div>
+        <div class="btn-row">
+          <button class="opt-btn yes-btn" onclick="selectYes()">已达成</button>
+          <button class="opt-btn no-btn" onclick="selectNo()">未达成</button>
+        </div>
+        <div class="back-row">
+          <button class="back-btn" onclick="goBack()">← 返回上一题</button>
+          <div style="margin:10px 0;"></div>
+          <button class="submit-btn" onclick="finishTest()">✅ 提交测试，查看结果</button>
+        </div>
+      </div>
+    </div>`;
+    return;
+  }
 
-  let backHtml = nowIndex > 0
-    ? `<div class="back-row"><button class="back-btn" onclick="goBack()">← 返回上一题</button></div>`
-    : "";
+  // 第一题
+  if (nowIndex === 0) {
+    c.innerHTML = `
+    <div class="q-box-wrapper">
+      <div class="q-box">
+        <div class="q-title">${item.name}</div>
+        <div class="q-desc">${item.desc}</div>
+        <div class="single-btn-row">
+          <button class="opt-btn yes-btn single-yes" onclick="selectYes()">确认达成</button>
+        </div>
+      </div>
+    </div>`;
+    return;
+  }
 
+  // 普通题目
   c.innerHTML = `
   <div class="q-box-wrapper">
     <div class="q-box">
       <div class="q-title">${item.name}</div>
       <div class="q-desc">${item.desc}</div>
-      ${btnHtml}
-      ${backHtml}
+      <div class="btn-row">
+        <button class="opt-btn yes-btn" onclick="selectYes()">已达成</button>
+        <button class="opt-btn no-btn" onclick="selectNo()">未达成</button>
+      </div>
+      <div class="back-row">
+        <button class="back-btn" onclick="goBack()">← 返回上一题</button>
+      </div>
     </div>
   </div>`;
 }
@@ -348,19 +389,8 @@ function renderQues() {
 function selectYes() { userResult[nowIndex] = true; next(); }
 function selectNo() { userResult[nowIndex] = false; next(); }
 
-async function next() {
+function next() {
   nowIndex++;
-  if (nowIndex >= 60) {
-    let score = userResult.filter(Boolean).length;
-    globalData.totalUsers++;
-    for (let i=0;i<60;i++) if (userResult[i]) globalData.countData[i]++;
-    if (!globalData.allScores) globalData.allScores = [];
-    globalData.allScores.push(score);
-    await saveGlobal();
-    await loadGlobal();
-    showResult(score);
-    return;
-  }
   renderQues();
 }
 
@@ -370,7 +400,19 @@ function goBack() {
   renderQues();
 }
 
-// 结果页（新增 超过百分比）
+// 提交完成测试
+async function finishTest() {
+  let score = userResult.filter(Boolean).length;
+  globalData.totalUsers++;
+  for (let i=0;i<60;i++) if (userResult[i]) globalData.countData[i]++;
+  if (!globalData.allScores) globalData.allScores = [];
+  globalData.allScores.push(score);
+  await saveGlobal();
+  await loadGlobal();
+  showResult(score);
+}
+
+// 结果页
 function showResult(score) {
   document.getElementById("answerPage").style.display = "none";
   document.getElementById("resultPage").style.display = "block";
