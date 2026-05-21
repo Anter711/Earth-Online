@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>地球 Online 成就统计</title>
+    <title>地球Online 人生成就测试</title>
     <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
     <style>
         * {
@@ -29,7 +29,6 @@
             font-size: 24px;
         }
 
-        /* 昵称界面 */
         .start-page {
             text-align: center;
             margin-top: 60px;
@@ -59,7 +58,6 @@
             margin-bottom: 20px;
         }
 
-        /* 题目卡片 + 动画容器 */
         .q-box-wrapper {
             animation: fadeInUp 0.45s ease forwards;
         }
@@ -74,7 +72,7 @@
             padding: 30px 25px;
         }
         .q-title {
-            font-size: 20px;
+            font-size: 22px;
             font-weight: bold;
             line-height: 1.6;
             margin-bottom: 10px;
@@ -84,11 +82,24 @@
             font-size: 15px;
             color: #ccc;
             line-height: 1.6;
-            margin-bottom: 30px;
+            margin-bottom: 20px;
         }
         .btn-row {
             display: flex;
             gap: 16px;
+            margin-bottom: 12px;
+        }
+        .back-row {
+            text-align: center;
+            margin-top: 10px;
+        }
+        .back-btn {
+            background: #444;
+            color: #fff;
+            border: none;
+            padding: 10px 22px;
+            border-radius: 8px;
+            cursor: pointer;
         }
         .single-btn-row{
             display:flex;
@@ -126,9 +137,16 @@
         }
         .total-info {
             text-align: center;
-            margin-bottom: 25px;
+            margin-bottom: 8px;
             font-size: 16px;
             color:#eee;
+        }
+        .rank-info {
+            text-align: center;
+            font-size: 16px;
+            color: #ffd700;
+            font-weight: bold;
+            margin-bottom: 25px;
         }
         .ach-list {
             display: grid;
@@ -165,26 +183,24 @@
 </head>
 <body>
 <div class="wrap">
-    <h1>地球 Online 成就统计</h1>
+    <h1>地球Online 人生成就测试</h1>
 
-    <!-- 昵称输入 -->
     <div class="start-page" id="startPage">
         <input type="text" class="nick-input" id="nickInput" placeholder="请输入你的昵称">
         <br>
         <button class="start-btn" onclick="startTest()">开始测试</button>
     </div>
 
-    <!-- 答题界面 -->
     <div id="answerPage" style="display:none;">
         <div class="progress-bar" id="progressText"></div>
-        <div id="qContainer"></div> <!-- 动画容器 -->
+        <div id="qContainer"></div>
     </div>
 
-    <!-- 结果界面 -->
     <div id="resultPage" class="result-page">
         <div id="saveBox" style="background:#0f1118;padding:20px;border-radius:16px;">
-            <div class="result-head">你的地球Online成就清单</div>
+            <div class="result-head">你的人生成就清单</div>
             <div class="total-info" id="totalInfo"></div>
+            <div class="rank-info" id="rankInfo"></div>
             <div class="ach-list" id="achList"></div>
         </div>
         <button class="save-img-btn" onclick="saveResultImage()">保存结果图片到本地</button>
@@ -257,106 +273,147 @@ const achData = [
 
 let nowIndex = 0;
 let userResult = new Array(60).fill(false);
+userResult[0] = true;
 let userName = "";
 
-let statData = JSON.parse(localStorage.getItem('achStat')) || {
-    totalUser:0,
-    doneCount:new Array(60).fill(0)
+// 全局统计（跨设备）
+const STATS_URL = "https://api.jsonbin.io/v3/b/67f1234567890abcdef12345";
+const API_KEY = "$2b$10$XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX";
+let globalData = {
+  totalUsers: 0,
+  countData: Array(60).fill(0),
+  allScores: []
 };
 
-// 开始测试
-function startTest() {
-    let nick = document.getElementById("nickInput").value.trim();
-    if (!nick) {
-        alert("请输入昵称");
-        return;
-    }
-    userName = nick;
-    document.getElementById("startPage").style.display = "none";
-    document.getElementById("answerPage").style.display = "block";
-    renderQues();
-}
-
-// 每次重新渲染卡片，动画自动触发
-function renderQues() {
-    document.getElementById("progressText").innerText = `进度：${nowIndex+1}/60`;
-    let item = achData[nowIndex];
-    let container = document.getElementById("qContainer");
-
-    let btnHtml = nowIndex === 0
-        ? `<div class="single-btn-row"><button class="opt-btn yes-btn single-yes" onclick="selectYes()">确认达成</button></div>`
-        : `<div class="btn-row"><button class="opt-btn yes-btn" onclick="selectYes()">已达成</button><button class="opt-btn no-btn" onclick="selectNo()">未达成</button></div>`;
-
-    container.innerHTML = `
-    <div class="q-box-wrapper">
-        <div class="q-box">
-            <div class="q-title">${item.name}</div>
-            <div class="q-desc">${item.desc}</div>
-            ${btnHtml}
-        </div>
-    </div>`;
-}
-
-function selectYes() {
-    userResult[nowIndex] = true;
-    next();
-}
-function selectNo() {
-    userResult[nowIndex] = false;
-    next();
-}
-
-function next() {
-    nowIndex++;
-    if (nowIndex >= 60) {
-        submit();
-        showResult();
-        return;
-    }
-    renderQues();
-}
-
-// 统计
-function submit() {
-    statData.totalUser++;
-    for (let i=0;i<60;i++) {
-        if (userResult[i]) statData.doneCount[i]++;
-    }
-    localStorage.setItem('achStat', JSON.stringify(statData));
-}
-
-// 结果
-function showResult() {
-    document.getElementById("answerPage").style.display = "none";
-    document.getElementById("resultPage").style.display = "block";
-    let num = userResult.filter(i=>i).length;
-    document.getElementById("totalInfo").innerText = 
-        `${userName}，你完成了 ${num} 项成就 | 已有${statData.totalUser}人测试`;
-
-    let html = "";
-    achData.forEach((item,i)=>{
-        let ok = userResult[i];
-        let r = statData.totalUser ? ((statData.doneCount[i]/statData.totalUser*100).toFixed(1)) : 0;
-        html += `
-        <div class="ach-item ${ok?'done':'undone'}">
-            <div>${ok?"✅":"❌"} ${item.name}</div>
-            <div style="color:#ccc;margin:3px 0;">${item.desc}</div>
-            <div style="font-size:10px;color:#aaa">${r}%达成</div>
-        </div>`;
+// 读取全局数据
+async function loadGlobal() {
+  try {
+    let res = await fetch(STATS_URL, {
+      headers: { "X-Master-Key": API_KEY }
     });
-    document.getElementById("achList").innerHTML = html;
+    let json = await res.json();
+    if (json.record) globalData = json.record;
+  } catch (e) {}
+}
+
+// 保存全局数据
+async function saveGlobal() {
+  try {
+    await fetch(STATS_URL, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        "X-Master-Key": API_KEY
+      },
+      body: JSON.stringify(globalData)
+    });
+  } catch (e) {}
+}
+
+// 开始
+function startTest() {
+  let n = document.getElementById("nickInput").value.trim();
+  if (!n) { alert("请输入昵称"); return; }
+  userName = n;
+  document.getElementById("startPage").style.display = "none";
+  document.getElementById("answerPage").style.display = "block";
+  loadGlobal().then(renderQues);
+}
+
+// 渲染题目
+function renderQues() {
+  document.getElementById("progressText").innerText = `进度：${nowIndex+1}/60`;
+  let item = achData[nowIndex];
+  let c = document.getElementById("qContainer");
+
+  let btnHtml = nowIndex === 0
+    ? `<div class="single-btn-row"><button class="opt-btn yes-btn single-yes" onclick="selectYes()">确认达成</button></div>`
+    : `<div class="btn-row"><button class="opt-btn yes-btn" onclick="selectYes()">已达成</button><button class="opt-btn no-btn" onclick="selectNo()">未达成</button></div>`;
+
+  let backHtml = nowIndex > 0
+    ? `<div class="back-row"><button class="back-btn" onclick="goBack()">← 返回上一题</button></div>`
+    : "";
+
+  c.innerHTML = `
+  <div class="q-box-wrapper">
+    <div class="q-box">
+      <div class="q-title">${item.name}</div>
+      <div class="q-desc">${item.desc}</div>
+      ${btnHtml}
+      ${backHtml}
+    </div>
+  </div>`;
+}
+
+function selectYes() { userResult[nowIndex] = true; next(); }
+function selectNo() { userResult[nowIndex] = false; next(); }
+
+async function next() {
+  nowIndex++;
+  if (nowIndex >= 60) {
+    let score = userResult.filter(Boolean).length;
+    globalData.totalUsers++;
+    for (let i=0;i<60;i++) if (userResult[i]) globalData.countData[i]++;
+    if (!globalData.allScores) globalData.allScores = [];
+    globalData.allScores.push(score);
+    await saveGlobal();
+    await loadGlobal();
+    showResult(score);
+    return;
+  }
+  renderQues();
+}
+
+function goBack() {
+  if (nowIndex <= 0) return;
+  nowIndex--;
+  renderQues();
+}
+
+// 结果页（新增 超过百分比）
+function showResult(score) {
+  document.getElementById("answerPage").style.display = "none";
+  document.getElementById("resultPage").style.display = "block";
+
+  let total = globalData.totalUsers;
+  document.getElementById("totalInfo").innerText =
+    `${userName}，你完成了 ${score} 项成就 | 已有${total}人参与测试`;
+
+  // 计算超过百分比
+  let list = globalData.allScores || [];
+  let better = list.filter(s => s < score).length;
+  let percent = list.length > 0
+    ? Math.round((better / list.length) * 100)
+    : 0;
+  if (percent > 100) percent = 100;
+  document.getElementById("rankInfo").innerText =
+    `🎉 你的成就超过了 ${percent}% 的玩家！`;
+
+  let html = "";
+  achData.forEach((it, i) => {
+    let ok = userResult[i];
+    let r = total ? ((globalData.countData[i] / total) * 100).toFixed(1) : 0;
+    html += `
+    <div class="ach-item ${ok ? 'done' : 'undone'}">
+      <div>${ok ? "✅" : "❌"} ${it.name}</div>
+      <div style="font-size:10px;color:#ccc;">${it.desc}</div>
+      <div style="font-size:10px;color:#aaa;">${r}%达成</div>
+    </div>`;
+  });
+  document.getElementById("achList").innerHTML = html;
 }
 
 // 保存图片
 function saveResultImage() {
-    html2canvas(document.getElementById("saveBox"),{
-        scale:2, backgroundColor:"#0f1118"
-    }).then(canvas=>{
-        let a = document.createElement("a");
-        a.download = "地球Online成就清单.png";
-        a.href = canvas.toDataURL("image/png");
-        a.click();
-    });
+  html2canvas(document.getElementById("saveBox"), {
+    scale: 2,
+    backgroundColor: "#0f1118"
+  }).then(canvas => {
+    let a = document.createElement("a");
+    a.download = "地球Online成就清单.png";
+    a.href = canvas.toDataURL("image/png");
+    a.click();
+  });
 }
 </script>
 </body>
