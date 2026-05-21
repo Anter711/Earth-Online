@@ -3,289 +3,361 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>地球Online 成就测试</title>
+    <title>地球 Online 成就统计</title>
+    <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            font-family: "Microsoft Yahei", sans-serif;
         }
         body {
-            background: #0a0a0a;
-            color: #fff;
-            display: flex;
-            justify-content: center;
-            padding: 20px;
+            background: #0f1118;
+            color: #f0f0f0;
             min-height: 100vh;
+            padding: 20px 15px;
         }
-        .container {
-            max-width: 700px;
-            width: 100%;
+        .wrap {
+            max-width: 750px;
+            margin: 0 auto;
         }
         h1 {
             text-align: center;
-            color: #d4af37;
+            color: #ffd700;
+            margin-bottom: 25px;
+            font-size: 24px;
+        }
+
+        /* 昵称界面 */
+        .start-page {
+            text-align: center;
+            margin-top: 60px;
+        }
+        .nick-input {
+            padding: 14px 16px;
+            width: 240px;
+            border-radius: 10px;
+            border: none;
+            font-size: 16px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .start-btn {
+            padding: 14px 30px;
+            background: #ffd700;
+            color: #000;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        .progress-bar {
+            text-align: center;
+            color: #999;
+            margin-bottom: 20px;
+        }
+
+        /* 题目卡片 + 动画容器 */
+        .q-box-wrapper {
+            animation: fadeInUp 0.45s ease forwards;
+        }
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(12px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .q-box {
+            background: #1c1f29;
+            border-radius: 16px;
+            padding: 30px 25px;
+        }
+        .q-title {
+            font-size: 20px;
+            font-weight: bold;
+            line-height: 1.6;
+            margin-bottom: 10px;
+            color: #fff;
+        }
+        .q-desc {
+            font-size: 15px;
+            color: #ccc;
+            line-height: 1.6;
             margin-bottom: 30px;
         }
-        .question-card {
-            background: #1a1a1a;
-            border: 1px solid #333;
-            border-radius: 12px;
-            padding: 25px;
-            margin-bottom: 20px;
-            display: none;
-        }
-        .question-card.active {
-            display: block;
-        }
-        .question-title {
-            font-size: 18px;
-            margin-bottom: 20px;
-            line-height: 1.6;
-        }
-        .btn-group {
+        .btn-row {
             display: flex;
-            gap: 15px;
+            gap: 16px;
         }
-        .btn {
+        .single-btn-row{
+            display:flex;
+            justify-content:center;
+        }
+        .opt-btn {
             flex: 1;
-            padding: 12px;
             border: none;
-            border-radius: 8px;
+            padding: 14px 0;
+            border-radius: 10px;
             font-size: 16px;
             cursor: pointer;
             transition: 0.2s;
         }
-        .btn-yes {
-            background: #d4af37;
+        .yes-btn {
+            background: #ffd700;
             color: #000;
         }
-        .btn-no {
-            background: #333;
+        .no-btn {
+            background: #333846;
             color: #fff;
         }
-        .btn:hover {
-            opacity: 0.9;
+        .single-yes{
+            width:200px;
         }
-        .progress {
-            text-align: center;
-            color: #888;
-            margin-bottom: 20px;
-        }
-        .result-card {
-            background: #1a1a1a;
-            border: 1px solid #333;
-            border-radius: 12px;
-            padding: 30px;
+        .result-page {
             display: none;
         }
-        .result-title {
-            color: #d4af37;
-            font-size: 22px;
-            margin-bottom: 20px;
+        .result-head {
             text-align: center;
+            color: #ffffff;
+            font-size: 22px;
+            margin-bottom: 10px;
+            font-weight:bold;
         }
-        .achievement-list {
+        .total-info {
+            text-align: center;
+            margin-bottom: 25px;
+            font-size: 16px;
+            color:#eee;
+        }
+        .ach-list {
             display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 15px;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 8px;
         }
-        .achievement-item {
-            background: #222;
-            border-radius: 8px;
+        .ach-item {
+            background: #1c1f29;
+            padding: 8px;
+            border-radius: 6px;
+            font-size: 11px;
+            color:#eee;
+            line-height: 1.4;
+        }
+        .done {
+            border: 1px solid #ffd700;
+        }
+        .undone {
+            opacity: 0.55;
+        }
+        .save-img-btn {
+            display: block;
+            width: 100%;
+            margin-top: 25px;
             padding: 15px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        .achievement-item.unlocked {
-            border: 1px solid #d4af37;
-        }
-        .achievement-item.locked {
-            opacity: 0.4;
-        }
-        .achievement-icon {
-            width: 40px;
-            height: 40px;
-            background: #d4af37;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: #000;
-            font-weight: bold;
-        }
-        .achievement-info h4 {
-            font-size: 14px;
-            margin-bottom: 3px;
-        }
-        .achievement-info p {
-            font-size: 12px;
-            color: #888;
-        }
-        .save-btn {
-            background: #d4af37;
+            background: #ffd700;
             color: #000;
             border: none;
-            padding: 12px 24px;
-            border-radius: 8px;
-            font-size: 16px;
+            border-radius: 10px;
+            font-size: 17px;
             cursor: pointer;
-            margin-top: 20px;
-            width: 100%;
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>🌍 地球Online 成就测试</h1>
-        <div class="progress" id="progress"></div>
-        <div id="questions"></div>
-        <div class="result-card" id="result">
-            <div class="result-title">🎖️ 你的成就报告</div>
-            <div class="achievement-list" id="achievementList"></div>
-            <button class="save-btn" onclick="saveResult()">保存结果截图</button>
-        </div>
+<div class="wrap">
+    <h1>地球 Online 成就统计</h1>
+
+    <!-- 昵称输入 -->
+    <div class="start-page" id="startPage">
+        <input type="text" class="nick-input" id="nickInput" placeholder="请输入你的昵称">
+        <br>
+        <button class="start-btn" onclick="startTest()">开始测试</button>
     </div>
 
-    <script>
-        // 成就数据（已包含图片里的题目和达成率）
-        const achievements = [
-            { id:1, name:"主角登场", desc:"成功登陆地球Online服务器", percent:100 },
-            { id:2, name:"亲密羁绊", desc:"完成婚姻系统绑定，缔结永久伴侣关系", percent:35 },
-            { id:3, name:"爱你老妈明天见", desc:"给妈妈每星期的拥抱和一次新约定", percent:52.36 },
-            { id:4, name:"资深玩家", desc:"游戏游戏游玩时长突破1000小时", percent:13.23 },
-            { id:5, name:"岁岁平安", desc:"一生无重大波折灾祸，生活安稳顺遂", percent:7.8 },
-            { id:6, name:"独处常态", desc:"习惯一个人吃饭看电影，享受独处生活", percent:45 },
-            { id:7, name:"零负债人生", desc:"无房贷、车贷、网贷，真正无债一身轻", percent:9 },
-            { id:8, name:"消失禁体质", desc:"十部电影小破流下超过8次", percent:35.78 },
-            { id:9, name:"无声的陪伴", desc:"养宠物超过5年，朝夕相伴", percent:29.36 },
-            { id:10, name:"徒步旅人", desc:"完成超三天的长途徒步路线行程", percent:8.76 },
-            { id:11, name:"电玩收藏家", desc:"入手多款游戏的正版主设备", percent:5.36 },
-            { id:12, name:"嗜睡者", desc:"平均每日睡眠时间超过10小时", percent:49.36 },
-            { id:13, name:"落日收藏家", desc:"特意蹲守日落拍摄过日落美景", percent:7.96 },
-            { id:14, name:"守住热爱", desc:"有一件爱好，坚持5年以上从未放弃", percent:13.96 },
-            { id:15, name:"首次远行", desc:"第一次离开家乡，到陌生的城市生活", percent:8.96 },
-            { id:16, name:"难道我是天才？", desc:"考试有过满分的经历", percent:72 },
-            { id:17, name:"安装乐器DLC", desc:"掌握一种乐器", percent:13 },
-            { id:18, name:"乐坛赴约", desc:"去过现场演唱会", percent:18.66 },
-            { id:19, name:"全款置业", desc:"无贷款独立购买房产", percent:4 },
-            { id:20, name:"这样子卷？", desc:"非上课时间一天学习超过10个小时", percent:18.6 },
-            { id:21, name:"顶峰登临", desc:"徒步登顶高山观景", percent:13.5 },
-            { id:22, name:"心灵手巧", desc:"独立完成手工DIY制作的成品", percent:22.16 },
-            { id:23, name:"故人走散", desc:"曾经无话不谈的朋友，慢慢地消失在生活", percent:73.5 },
-            { id:24, name:"山野露营", desc:"体验户外野外露营过", percent:10.16 },
-            { id:25, name:"误闯新世界", desc:"通过互联网接触探索学习新的知识、思维", percent:65.36 },
-            { id:26, name:"真心羁绊", desc:"拥有相处10年以上，可以完全无条件信任的挚友", percent:13 },
-            { id:27, name:"追剧达人", desc:"完整追完10部长篇剧集", percent:38.26 },
-            { id:28, name:"通宵达人", desc:"凌晨4点仍保持清醒，突破睡眠生理极限", percent:47.16 },
-            { id:29, name:"遗憾离场", desc:"认真爱过一个人，最终没能走到最后", percent:61 },
-            { id:30, name:"驾照猎人", desc:"通过驾考考试，解锁机动车驾驶权限", percent:5.36 },
-            { id:31, name:"说走就走", desc:"临时规划，即兴长/短途旅行", percent:21.76 },
-            { id:32, name:"自律传说", desc:"长期保持早睡早起、三餐规律、稳定心态", percent:7 },
-            { id:33, name:"初心未改", desc:"成年后仍守住年少的热爱", percent:5 },
-            { id:34, name:"空想行动派", desc:"想法众多却迟迟不推动手落实", percent:60.76 },
-            { id:35, name:"观影达人", desc:"一年累计观看电影超30部", percent:23.56 },
-            { id:36, name:"自我救赎", desc:"低谷时期自我调节，不靠他人走出阴霾", percent:6.76 },
-            { id:37, name:"子嗣DLC", desc:"解锁下一代，开启支线副本", percent:12.96 },
-            { id:38, name:"经济断奶", desc:"经济独立，不再依赖原生家庭补给", percent:27.6 },
-            { id:39, name:"外卖至尊VIP", desc:"连续一整月三餐全靠外卖，零下厨", percent:79.6 },
-            { id:40, name:"初恋支线", desc:"触发人生第一次心动恋爱专属剧情", percent:71 },
-            { id:41, name:"自驾游历", desc:"第一次自驾旅行的经历", percent:16.46 },
-            { id:42, name:"拖延症", desc:"事情必须到截止日期当天，极限前提交", percent:33.36 },
-            { id:43, name:"千里赴约", desc:"跨越多个城市，奔赴重要的人", percent:11.66 },
-            { id:44, name:"垂钓闲人", desc:"每周户外垂钓享受安静独处时光", percent:8.86 },
-            { id:45, name:"极简社交者", desc:"只维系3个以内的核心亲密好友", percent:27.46 },
-            { id:46, name:"安装语言包DLC", desc:"掌握一门母语以外的语言", percent:9.76 },
-            { id:47, name:"学有所成", desc:"成功通过高等教育，拿到大学毕业认证", percent:89 },
-            { id:48, name:"厨艺觉醒", desc:"不害为己，独立做出一桌家常菜来", percent:42 },
-            { id:49, name:"方言包DLC", desc:"熟练掌握2种以上地方方言", percent:18.36 },
-            { id:50, name:"财富自由", desc:"收入富足，不必为生计钱财而操劳", percent:5.26 },
-            { id:51, name:"海外打卡", desc:"拥有一次境外旅行的经历", percent:11 },
-            { id:52, name:"双向钟情", desc:"和心爱的人告白，结果对方也喜欢你", percent:6.56 },
-            { id:53, name:"不眠者", desc:"平均每日睡眠时间低于7小时", percent:56.26 },
-            { id:54, name:"月光战神", desc:"每月工资到手即清零，存款永远近似于零", percent:82 },
-            { id:55, name:"人形闹钟", desc:"超过24小时不睡觉", percent:46.76 },
-            { id:56, name:"第一份工", desc:"拥有人生的第一份正式工作", percent:71 },
-            { id:57, name:"长期单身常驻", desc:"成年后连续单身从未长期恋爱", percent:37.96 },
-            { id:58, name:"异乡打工人", desc:"背井离乡在外打拼，一年回家不超过2次", percent:45.96 },
-            { id:59, name:"我停不下来", desc:"一天安排了很多事情，全程不离屏幕", percent:32 }
-        ];
+    <!-- 答题界面 -->
+    <div id="answerPage" style="display:none;">
+        <div class="progress-bar" id="progressText"></div>
+        <div id="qContainer"></div> <!-- 动画容器 -->
+    </div>
 
-        let currentIndex = 0;
-        let unlockedAchievements = [];
+    <!-- 结果界面 -->
+    <div id="resultPage" class="result-page">
+        <div id="saveBox" style="background:#0f1118;padding:20px;border-radius:16px;">
+            <div class="result-head">你的地球Online成就清单</div>
+            <div class="total-info" id="totalInfo"></div>
+            <div class="ach-list" id="achList"></div>
+        </div>
+        <button class="save-img-btn" onclick="saveResultImage()">保存结果图片到本地</button>
+    </div>
+</div>
 
-        // 渲染当前题目
-        function renderQuestion() {
-            const questionsDiv = document.getElementById('questions');
-            questionsDiv.innerHTML = '';
-            
-            const ach = achievements[currentIndex];
-            const progressDiv = document.getElementById('progress');
-            progressDiv.textContent = `进度：${currentIndex + 1}/${achievements.length}`;
+<script>
+const achData = [
+    {name:"主角登场",desc:"成功注册并登录地球Online服务器"},
+    {name:"亲密羁绊",desc:"完成婚姻系统绑定，缔结永久伴侣关系"},
+    {name:"爱你老妈明天见",desc:"给妈妈准备一份礼物和一束鲜花"},
+    {name:"资深玩家",desc:"电子游戏游玩时长突破1000小时"},
+    {name:"岁岁平安",desc:"一生无重大波折灾祸，生活安稳顺遂"},
+    {name:"独处常态",desc:"习惯一个人吃饭看电影，享受独处生活"},
+    {name:"零负债人生",desc:"无房贷、车贷、网贷，真正无债一身轻"},
+    {name:"流泪体质",desc:"看电影、电视、玩游戏，容易被剧情打动落泪"},
+    {name:"无声的陪伴",desc:"养宠物超过5年，朝夕相伴"},
+    {name:"徒步旅人",desc:"完成超三天的长途徒步路线行程"},
+    {name:"电玩收藏家",desc:"入手多款正版游戏及游戏设备"},
+    {name:"嗜睡者",desc:"平均每日睡眠时间超过10小时"},
+    {name:"落日收藏家",desc:"特意蹲守日落并拍摄美景"},
+    {name:"守住热爱",desc:"有一件爱好坚持5年以上从未放弃"},
+    {name:"首次远行",desc:"第一次离开家乡到陌生城市生活"},
+    {name:"难道我是天才",desc:"学生时代考试拿过满分"},
+    {name:"安装乐器DLC",desc:"熟练掌握一种乐器"},
+    {name:"乐坛赴约",desc:"去过现场观看演唱会"},
+    {name:"全款置业",desc:"无贷款独立购买房产"},
+    {name:"内卷达人",desc:"非上课时间一天学习超过10小时"},
+    {name:"顶峰登临",desc:"徒步登顶高山观景"},
+    {name:"心灵手巧",desc:"独立完成手工DIY成品制作"},
+    {name:"故人走散",desc:"曾经无话不谈的朋友现在已经渐渐疏远"},
+    {name:"山野露营",desc:"体验过户外野外露营"},
+    {name:"误闯天家",desc:"原本只是想通过浏览器搜索资料，结果......"},
+    {name:"真心羁绊",desc:"拥有相处十年以上无条件信任挚友"},
+    {name:"追剧达人",desc:"完整追完十部长篇剧集"},
+    {name:"通宵达人",desc:"凌晨三点依旧清醒熬夜"},
+    {name:"遗憾离场",desc:"认真爱过一人最终没能走到最后"},
+    {name:"驾照猎人",desc:"考取驾照解锁机动车驾驶权限"},
+    {name:"说走就走",desc:"临时规划来一场即兴旅行"},
+    {name:"自律传说",desc:"长期早睡早起三餐规律心态稳定"},
+    {name:"初心未改",desc:"成年后依旧守住年少时的热爱"},
+    {name:"空想行动派",desc:"想法很多却迟迟不肯动手落实"},
+    {name:"观影达人",desc:"一年累计观看电影超三十部"},
+    {name:"自我救赎",desc:"低谷时期靠自己走出情绪阴霾"},
+    {name:"子嗣DLC",desc:"生育子女，并开启高难度支线副本"},
+    {name:"经济断奶",desc:"实现经济独立不再依靠家里"},
+    {name:"外卖至尊VIP",desc:"连续整月三餐全部吃外卖"},
+    {name:"初恋支线",desc:"触发人生第一次心动恋爱剧情"},
+    {name:"自驾游历",desc:"拥有独自自驾旅行经历"},
+    {name:"拖延症患者",desc:"凡事习惯拖到最后截止日期"},
+    {name:"千里赴约",desc:"跨越多个城市奔赴想见的人"},
+    {name:"垂钓闲人",desc:"闲暇时间喜欢户外垂钓放松"},
+    {name:"极简社交者",desc:"只维系三个以内亲密好友"},
+    {name:"语言能力DLC",desc:"熟练掌握一门外语"},
+    {name:"学有所成",desc:"顺利完成高等教育拿到大学毕业证"},
+    {name:"厨艺觉醒",desc:"能够独立做出一桌家常菜，零黑暗料理"},
+    {name:"方言精通",desc:"熟练掌握两种及以上地方方言"},
+    {name:"财富自由",desc:"收入富足，此生不必为生计钱财奔波操劳"},
+    {name:"海外打卡",desc:"有过出境旅行游玩经历"},
+    {name:"双向钟情",desc:"告白喜欢的人刚好对方也喜欢你"},
+    {name:"不眠者",desc:"日常平均睡眠时间不足七小时"},
+    {name:"月光战神",desc:"每月工资到手很快全部花光，存款永远趋近归零"},
+    {name:"人形闹钟",desc:"有过二十四小时以上不睡觉经历"},
+    {name:"第一份工作",desc:"拥有属于自己的第一份正式工作"},
+    {name:"长期单身",desc:"成年后超过三年保持单身状态"},
+    {name:"异乡打工人",desc:"常年在外打拼很少回家，一年不超过两次"},
+    {name:"我停不下来",desc:"一天超过八小时对着手机、电脑屏幕"},
+    {name:"勇敢独行",desc:"独自出门远行游玩无任何人陪同"}
+];
 
-            const card = document.createElement('div');
-            card.className = 'question-card active';
-            card.innerHTML = `
-                <div class="question-title">
-                    <strong>${ach.name}</strong><br>
-                    ${ach.desc}<br>
-                    <small style="color:#888">已有 ${ach.percent}% 的玩家达成</small>
-                </div>
-                <div class="btn-group">
-                    <button class="btn btn-yes" onclick="answer(true)">✅ 我达成了</button>
-                    <button class="btn btn-no" onclick="answer(false)">❌ 尚未达成</button>
-                </div>
-            `;
-            questionsDiv.appendChild(card);
-        }
+let nowIndex = 0;
+let userResult = new Array(60).fill(false);
+let userName = "";
 
-        // 处理答案
-        function answer(unlocked) {
-            if (unlocked) {
-                unlockedAchievements.push(achievements[currentIndex]);
-            }
-            currentIndex++;
-            if (currentIndex < achievements.length) {
-                renderQuestion();
-            } else {
-                showResult();
-            }
-        }
+let statData = JSON.parse(localStorage.getItem('achStat')) || {
+    totalUser:0,
+    doneCount:new Array(60).fill(0)
+};
 
-        // 显示结果
-        function showResult() {
-            document.getElementById('questions').style.display = 'none';
-            document.getElementById('progress').style.display = 'none';
-            const resultDiv = document.getElementById('result');
-            const listDiv = document.getElementById('achievementList');
-            
-            listDiv.innerHTML = '';
-            achievements.forEach(ach => {
-                const isUnlocked = unlockedAchievements.some(a => a.id === ach.id);
-                const item = document.createElement('div');
-                item.className = `achievement-item ${isUnlocked ? 'unlocked' : 'locked'}`;
-                item.innerHTML = `
-                    <div class="achievement-icon">${isUnlocked ? '✓' : '○'}</div>
-                    <div class="achievement-info">
-                        <h4>${ach.name}</h4>
-                        <p>${ach.percent}% 玩家达成</p>
-                    </div>
-                `;
-                listDiv.appendChild(item);
-            });
-            
-            resultDiv.style.display = 'block';
-        }
+// 开始测试
+function startTest() {
+    let nick = document.getElementById("nickInput").value.trim();
+    if (!nick) {
+        alert("请输入昵称");
+        return;
+    }
+    userName = nick;
+    document.getElementById("startPage").style.display = "none";
+    document.getElementById("answerPage").style.display = "block";
+    renderQues();
+}
 
-        // 保存结果（简单版，可截图）
-        function saveResult() {
-            alert('结果已生成！你可以直接截图保存，或长按分享~');
-        }
+// 每次重新渲染卡片，动画自动触发
+function renderQues() {
+    document.getElementById("progressText").innerText = `进度：${nowIndex+1}/60`;
+    let item = achData[nowIndex];
+    let container = document.getElementById("qContainer");
 
-        // 初始化
-        renderQuestion();
-    </script>
+    let btnHtml = nowIndex === 0
+        ? `<div class="single-btn-row"><button class="opt-btn yes-btn single-yes" onclick="selectYes()">确认达成</button></div>`
+        : `<div class="btn-row"><button class="opt-btn yes-btn" onclick="selectYes()">已达成</button><button class="opt-btn no-btn" onclick="selectNo()">未达成</button></div>`;
+
+    container.innerHTML = `
+    <div class="q-box-wrapper">
+        <div class="q-box">
+            <div class="q-title">${item.name}</div>
+            <div class="q-desc">${item.desc}</div>
+            ${btnHtml}
+        </div>
+    </div>`;
+}
+
+function selectYes() {
+    userResult[nowIndex] = true;
+    next();
+}
+function selectNo() {
+    userResult[nowIndex] = false;
+    next();
+}
+
+function next() {
+    nowIndex++;
+    if (nowIndex >= 60) {
+        submit();
+        showResult();
+        return;
+    }
+    renderQues();
+}
+
+// 统计
+function submit() {
+    statData.totalUser++;
+    for (let i=0;i<60;i++) {
+        if (userResult[i]) statData.doneCount[i]++;
+    }
+    localStorage.setItem('achStat', JSON.stringify(statData));
+}
+
+// 结果
+function showResult() {
+    document.getElementById("answerPage").style.display = "none";
+    document.getElementById("resultPage").style.display = "block";
+    let num = userResult.filter(i=>i).length;
+    document.getElementById("totalInfo").innerText = 
+        `${userName}，你完成了 ${num} 项成就 | 已有${statData.totalUser}人测试`;
+
+    let html = "";
+    achData.forEach((item,i)=>{
+        let ok = userResult[i];
+        let r = statData.totalUser ? ((statData.doneCount[i]/statData.totalUser*100).toFixed(1)) : 0;
+        html += `
+        <div class="ach-item ${ok?'done':'undone'}">
+            <div>${ok?"✅":"❌"} ${item.name}</div>
+            <div style="color:#ccc;margin:3px 0;">${item.desc}</div>
+            <div style="font-size:10px;color:#aaa">${r}%达成</div>
+        </div>`;
+    });
+    document.getElementById("achList").innerHTML = html;
+}
+
+// 保存图片
+function saveResultImage() {
+    html2canvas(document.getElementById("saveBox"),{
+        scale:2, backgroundColor:"#0f1118"
+    }).then(canvas=>{
+        let a = document.createElement("a");
+        a.download = "地球Online成就清单.png";
+        a.href = canvas.toDataURL("image/png");
+        a.click();
+    });
+}
+</script>
 </body>
 </html>
