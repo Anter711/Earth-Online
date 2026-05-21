@@ -28,7 +28,6 @@
             margin-bottom: 25px;
             font-size: 24px;
         }
-
         .start-page {
             text-align: center;
             margin-top: 60px;
@@ -51,13 +50,11 @@
             font-size: 16px;
             cursor: pointer;
         }
-
         .progress-bar {
             text-align: center;
             color: #999;
             margin-bottom: 20px;
         }
-
         .q-box-wrapper {
             animation: fadeInUp 0.45s ease forwards;
         }
@@ -65,7 +62,6 @@
             from { opacity: 0; transform: translateY(12px); }
             to { opacity: 1; transform: translateY(0); }
         }
-
         .q-box {
             background: #1c1f29;
             border-radius: 16px;
@@ -98,15 +94,6 @@
             color: #fff;
             border: none;
             padding: 10px 22px;
-            border-radius: 8px;
-            cursor: pointer;
-        }
-        .submit-btn {
-            background: #ffd700;
-            color: #000;
-            font-weight: bold;
-            border: none;
-            padding: 12px 24px;
             border-radius: 8px;
             cursor: pointer;
         }
@@ -193,18 +180,15 @@
 <body>
 <div class="wrap">
     <h1>地球Online 人生成就测试</h1>
-
     <div class="start-page" id="startPage">
         <input type="text" class="nick-input" id="nickInput" placeholder="请输入你的昵称">
         <br>
         <button class="start-btn" onclick="startTest()">开始测试</button>
     </div>
-
     <div id="answerPage" style="display:none;">
         <div class="progress-bar" id="progressText"></div>
         <div id="qContainer"></div>
     </div>
-
     <div id="resultPage" class="result-page">
         <div id="saveBox" style="background:#0f1118;padding:20px;border-radius:16px;">
             <div class="result-head">你的人生成就清单</div>
@@ -285,177 +269,164 @@ let userResult = new Array(60).fill(false);
 userResult[0] = true;
 let userName = "";
 
-// 全局统计
-let globalData = {
-  totalUsers: 0,
-  countData: Array(60).fill(0),
-  allScores: []
+// 云端全局统计
+const DB_URL = "https://jsonbin.io/raw/67f46053e41b4579491a0595";
+const PUT_URL = "https://jsonbin.io/b/67f46053e41b4579491a0595";
+let cloudData = {
+    totalUser: 0,
+    achieveCount: Array(60).fill(0),
+    scoreList: []
 };
 
-// 读取统计
-async function loadGlobal() {
-  try {
-    let res = await fetch("https://api.jsonbin.io/v3/b/67f45c16ad19ca0189e6cc9f", {
-      headers: { "X-Master-Key": "$2b$10$LjqgUxkK6d0JnV5d00eXJuXs8t9aG5t2a1Q2l3z4x5a6s7d8f9g0h" }
-    });
-    let json = await res.json();
-    if (json.record) globalData = json.record;
-  } catch (e) {}
+// 读取云端数据
+async function getCloudData(){
+    try{
+        let res = await fetch(DB_URL);
+        cloudData = await res.json();
+    }catch(e){
+        cloudData = {totalUser:0,achieveCount:Array(60).fill(0),scoreList:[]};
+    }
 }
 
-// 保存统计
-async function saveGlobal() {
-  try {
-    await fetch("https://api.jsonbin.io/v3/b/67f45c16ad19ca0189e6cc9f", {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-        "X-Master-Key": "$2b$10$LjqgUxkK6d0JnV5d00eXJuXs8t9aG5t2a1Q2l3z4x5a6s7d8f9g0h"
-      },
-      body: JSON.stringify(globalData)
-    });
-  } catch (e) {}
+// 提交云端数据
+async function setCloudData(){
+    await fetch(PUT_URL,{
+        method:"PUT",
+        headers:{"Content-Type":"application/json"},
+        body:JSON.stringify(cloudData)
+    })
 }
 
-// 开始
-function startTest() {
-  let n = document.getElementById("nickInput").value.trim();
-  if (!n) { alert("请输入昵称"); return; }
-  userName = n;
-  document.getElementById("startPage").style.display = "none";
-  document.getElementById("answerPage").style.display = "block";
-  loadGlobal().then(renderQues);
+function startTest(){
+    let nick = document.getElementById("nickInput").value.trim();
+    if(!nick){alert("请输入昵称");return;}
+    userName = nick;
+    document.getElementById("startPage").style.display = "none";
+    document.getElementById("answerPage").style.display = "block";
+    getCloudData().then(renderQues);
 }
 
-// 渲染题目
-function renderQues() {
-  document.getElementById("progressText").innerText = `进度：${nowIndex+1}/60`;
-  let item = achData[nowIndex];
-  let c = document.getElementById("qContainer");
+function renderQues(){
+    document.getElementById("progressText").innerText = `进度：${nowIndex+1}/60`;
+    let item = achData[nowIndex];
+    let box = document.getElementById("qContainer");
 
-  // 最后一题：显示提交按钮
-  if (nowIndex === 59) {
-    c.innerHTML = `
+    // 最后一题
+    if(nowIndex === 59){
+        box.innerHTML = `
+        <div class="q-box-wrapper">
+            <div class="q-box">
+                <div class="q-title">${item.name}</div>
+                <div class="q-desc">${item.desc}</div>
+                <div class="btn-row">
+                    <button class="opt-btn yes-btn" onclick="selectLastYes()">已达成</button>
+                    <button class="opt-btn no-btn" onclick="selectLastNo()">未达成</button>
+                </div>
+                <div class="back-row">
+                    <button class="back-btn" onclick="goBack()">← 返回上一题</button>
+                </div>
+            </div>
+        </div>`;
+        return;
+    }
+
+    // 第一题
+    if(nowIndex === 0){
+        box.innerHTML = `
+        <div class="q-box-wrapper">
+            <div class="q-box">
+                <div class="q-title">${item.name}</div>
+                <div class="q-desc">${item.desc}</div>
+                <div class="single-btn-row">
+                    <button class="opt-btn yes-btn single-yes" onclick="selectYes()">确认达成</button>
+                </div>
+            </div>
+        </div>`;
+        return;
+    }
+
+    // 中间题目
+    box.innerHTML = `
     <div class="q-box-wrapper">
-      <div class="q-box">
-        <div class="q-title">${item.name}</div>
-        <div class="q-desc">${item.desc}</div>
-        <div class="btn-row">
-          <button class="opt-btn yes-btn" onclick="selectYes()">已达成</button>
-          <button class="opt-btn no-btn" onclick="selectNo()">未达成</button>
+        <div class="q-box">
+            <div class="q-title">${item.name}</div>
+            <div class="q-desc">${item.desc}</div>
+            <div class="btn-row">
+                <button class="opt-btn yes-btn" onclick="selectYes()">已达成</button>
+                <button class="opt-btn no-btn" onclick="selectNo()">未达成</button>
+            </div>
+            <div class="back-row">
+                <button class="back-btn" onclick="goBack()">← 返回上一题</button>
+            </div>
         </div>
-        <div class="back-row">
-          <button class="back-btn" onclick="goBack()">← 返回上一题</button>
-          <div style="margin:10px 0;"></div>
-          <button class="submit-btn" onclick="finishTest()">✅ 提交测试，查看结果</button>
-        </div>
-      </div>
     </div>`;
-    return;
-  }
-
-  // 第一题
-  if (nowIndex === 0) {
-    c.innerHTML = `
-    <div class="q-box-wrapper">
-      <div class="q-box">
-        <div class="q-title">${item.name}</div>
-        <div class="q-desc">${item.desc}</div>
-        <div class="single-btn-row">
-          <button class="opt-btn yes-btn single-yes" onclick="selectYes()">确认达成</button>
-        </div>
-      </div>
-    </div>`;
-    return;
-  }
-
-  // 普通题目
-  c.innerHTML = `
-  <div class="q-box-wrapper">
-    <div class="q-box">
-      <div class="q-title">${item.name}</div>
-      <div class="q-desc">${item.desc}</div>
-      <div class="btn-row">
-        <button class="opt-btn yes-btn" onclick="selectYes()">已达成</button>
-        <button class="opt-btn no-btn" onclick="selectNo()">未达成</button>
-      </div>
-      <div class="back-row">
-        <button class="back-btn" onclick="goBack()">← 返回上一题</button>
-      </div>
-    </div>
-  </div>`;
 }
 
-function selectYes() { userResult[nowIndex] = true; next(); }
-function selectNo() { userResult[nowIndex] = false; next(); }
+// 普通题选择
+function selectYes(){userResult[nowIndex]=true;next();}
+function selectNo(){userResult[nowIndex]=false;next();}
+function next(){nowIndex++;renderQues();}
 
-function next() {
-  nowIndex++;
-  renderQues();
+// 最后一题选择 → 直接自动提交
+async function selectLastYes(){
+    userResult[nowIndex] = true;
+    await submitAll();
+}
+async function selectLastNo(){
+    userResult[nowIndex] = false;
+    await submitAll();
 }
 
-function goBack() {
-  if (nowIndex <= 0) return;
-  nowIndex--;
-  renderQues();
-}
+function goBack(){if(nowIndex>0){nowIndex--;renderQues();}}
 
-// 提交完成测试
-async function finishTest() {
-  let score = userResult.filter(Boolean).length;
-  globalData.totalUsers++;
-  for (let i=0;i<60;i++) if (userResult[i]) globalData.countData[i]++;
-  if (!globalData.allScores) globalData.allScores = [];
-  globalData.allScores.push(score);
-  await saveGlobal();
-  await loadGlobal();
-  showResult(score);
+// 自动提交并跳转结果
+async function submitAll(){
+    let myScore = userResult.filter(v=>v).length;
+    cloudData.totalUser += 1;
+    for(let i=0;i<60;i++){
+        if(userResult[i]) cloudData.achieveCount[i]++;
+    }
+    cloudData.scoreList.push(myScore);
+    await setCloudData();
+    await getCloudData();
+    showResultPage(myScore);
 }
 
 // 结果页
-function showResult(score) {
-  document.getElementById("answerPage").style.display = "none";
-  document.getElementById("resultPage").style.display = "block";
+function showResultPage(score){
+    document.getElementById("answerPage").style.display = "none";
+    document.getElementById("resultPage").style.display = "block";
+    let total = cloudData.totalUser;
+    document.getElementById("totalInfo").innerText = `${userName}，你完成${score}项成就 | 已有${total}人参与测试`;
 
-  let total = globalData.totalUsers;
-  document.getElementById("totalInfo").innerText =
-    `${userName}，你完成了 ${score} 项成就 | 已有${total}人参与测试`;
+    let arr = cloudData.scoreList;
+    let winNum = arr.filter(s=>s < score).length;
+    let per = arr.length>0 ? Math.round(winNum/arr.length*100) : 0;
+    document.getElementById("rankInfo").innerText = `🎉 你的成就超越${per}%参与玩家`;
 
-  // 计算超过百分比
-  let list = globalData.allScores || [];
-  let better = list.filter(s => s < score).length;
-  let percent = list.length > 0
-    ? Math.round((better / list.length) * 100)
-    : 0;
-  if (percent > 100) percent = 100;
-  document.getElementById("rankInfo").innerText =
-    `🎉 你的成就超过了 ${percent}% 的玩家！`;
-
-  let html = "";
-  achData.forEach((it, i) => {
-    let ok = userResult[i];
-    let r = total ? ((globalData.countData[i] / total) * 100).toFixed(1) : 0;
-    html += `
-    <div class="ach-item ${ok ? 'done' : 'undone'}">
-      <div>${ok ? "✅" : "❌"} ${it.name}</div>
-      <div style="font-size:10px;color:#ccc;">${it.desc}</div>
-      <div style="font-size:10px;color:#aaa;">${r}%达成</div>
-    </div>`;
-  });
-  document.getElementById("achList").innerHTML = html;
+    let html = "";
+    achData.forEach((item,idx)=>{
+        let done = userResult[idx];
+        let rate = total>0 ? (cloudData.achieveCount[idx]/total*100).toFixed(1) : 0;
+        html += `
+        <div class="ach-item ${done?'done':'undone'}">
+            <div>${done?"✅":"❌"}${item.name}</div>
+            <div style="font-size:10px;color:#ccc">${item.desc}</div>
+            <div style="font-size:10px;color:#aaa">${rate}%人达成</div>
+        </div>`;
+    })
+    document.getElementById("achList").innerHTML = html;
 }
 
 // 保存图片
-function saveResultImage() {
-  html2canvas(document.getElementById("saveBox"), {
-    scale: 2,
-    backgroundColor: "#0f1118"
-  }).then(canvas => {
-    let a = document.createElement("a");
-    a.download = "地球Online成就清单.png";
-    a.href = canvas.toDataURL("image/png");
-    a.click();
-  });
+function saveResultImage(){
+    html2canvas(document.getElementById("saveBox"),{scale:2,backgroundColor:"#0f1118"})
+    .then(canvas=>{
+        let a = document.createElement("a");
+        a.href = canvas.toDataURL("image/png");
+        a.download = "地球Online成就测试结果.png";
+        a.click();
+    })
 }
 </script>
 </body>
