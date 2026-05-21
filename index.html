@@ -181,7 +181,7 @@
 <div class="wrap">
     <h1>地球Online 人生成就测试</h1>
     <div class="start-page" id="startPage">
-        <input type="text" class="nick-input" id="nickInput" placeholder="请输入你的昵称">
+        <input type="text" class="nick-input" id="nickInput" placeholder="请输入昵称">
         <br>
         <button class="start-btn" onclick="startTest()">开始测试</button>
     </div>
@@ -269,32 +269,58 @@ let userResult = new Array(60).fill(false);
 userResult[0] = true;
 let userName = "";
 
-// 云端统计
-const DB_URL = "https://jsonbin.io/raw/67f46053e41b4579491a0595";
-const PUT_URL = "https://jsonbin.io/b/67f46053e41b4579491a0595";
+// ---------- 这里换成你自己的 JSONBin 配置 ----------
+const BIN_ID = "67f46053e41b4579491a0595";
+const API_KEY = "$2a$10$GShOL5vNq8uZjoQRY/h9ReGQ765xF5.ZAfoCGxczucl98elgA1rgi"; // 去jsonbin.io后台生成
+const DB_URL = `https://jsonbin.io/raw/${BIN_ID}?r=${Math.random()}`; // 防缓存
+const PUT_URL = `https://jsonbin.io/b/${BIN_ID}`;
+// -------------------------------------------------------
+
 let cloudData = {
     totalUser: 0,
     achieveCount: Array(60).fill(0),
     scoreList: []
 };
 
-// 读取云端（失败不卡）
+// 读取云端（带防缓存+错误日志）
 function getCloudData(){
-    fetch(DB_URL)
-    .then(res=>res.json())
-    .then(data=>{ cloudData = data; })
-    .catch(e=>{
-        cloudData = {totalUser:0,achieveCount:Array(60).fill(0),scoreList:[]};
+    fetch(DB_URL, {
+        method: "GET",
+        headers: {
+            "X-Master-Key": API_KEY
+        }
+    })
+    .then(res => {
+        if (!res.ok) throw new Error("读取失败：" + res.status);
+        return res.json();
+    })
+    .then(data => {
+        cloudData = data;
+        console.log("✅ 读取成功：", cloudData);
+    })
+    .catch(e => {
+        console.error("❌ 读取失败：", e);
+        cloudData = {totalUser:0, achieveCount:Array(60).fill(0), scoreList:[]};
     });
 }
 
-// 上传云端（后台悄悄做，失败不影响）
+// 上传云端（带认证+错误日志）
 function setCloudData(){
-    fetch(PUT_URL,{
-        method:"PUT",
-        headers:{"Content-Type":"application/json"},
-        body:JSON.stringify(cloudData)
-    }).catch(e=>{});
+    fetch(PUT_URL, {
+        method: "PUT",
+        headers: {
+            "Content-Type": "application/json",
+            "X-Master-Key": API_KEY
+        },
+        body: JSON.stringify(cloudData)
+    })
+    .then(res => {
+        if (!res.ok) throw new Error("提交失败：" + res.status);
+        console.log("✅ 提交成功");
+    })
+    .catch(e => {
+        console.error("❌ 提交失败：", e);
+    });
 }
 
 function startTest(){
@@ -304,7 +330,7 @@ function startTest(){
     document.getElementById("startPage").style.display = "none";
     document.getElementById("answerPage").style.display = "block";
     getCloudData();
-    renderQues();
+    setTimeout(renderQues, 300); // 等数据加载
 }
 
 function renderQues(){
@@ -312,7 +338,6 @@ function renderQues(){
     let item = achData[nowIndex];
     let box = document.getElementById("qContainer");
 
-    // 最后一题（59）
     if(nowIndex === 59){
         box.innerHTML = `
         <div class="q-box-wrapper">
@@ -331,7 +356,6 @@ function renderQues(){
         return;
     }
 
-    // 第一题
     if(nowIndex === 0){
         box.innerHTML = `
         <div class="q-box-wrapper">
@@ -346,7 +370,6 @@ function renderQues(){
         return;
     }
 
-    // 中间题
     box.innerHTML = `
     <div class="q-box-wrapper">
         <div class="q-box">
@@ -363,39 +386,46 @@ function renderQues(){
     </div>`;
 }
 
-// 普通题
 function selectYes(){ userResult[nowIndex]=true; nextPage(); }
 function selectNo(){ userResult[nowIndex]=false; nextPage(); }
 function nextPage(){ nowIndex++; renderQues(); }
 function goBack(){ if(nowIndex>0){ nowIndex--; renderQues(); } }
 
-// 最后一题：直接算分+跳结果，不同步等网络
-function lastYes(){
-    userResult[59]=true;
-    finishAndShow();
-}
-function lastNo(){
-    userResult[59]=false;
-    finishAndShow();
-}
+function lastYes(){ userResult[59]=true; finishAndShow(); }
+function lastNo(){ userResult[59]=false; finishAndShow(); }
 
-// 结算：本地立刻显示，后台异步上传
+// 结算：先读最新 → 累加 → 提交 → 显示
 function finishAndShow(){
     let myScore = userResult.filter(v=>v).length;
 
-    // 先立刻显示结果（不卡）
-    showResultPage(myScore);
+    // 1. 先拿最新数据（防止覆盖别人）
+    fetch(DB_URL, {
+        method: "GET",
+        headers: { "X-Master-Key": API_KEY }
+    })
+    .then(res=>res.json())
+    .then(latestData=>{
+        cloudData = latestData;
 
-    // 后台悄悄更新云端（失败不影响）
-    cloudData.totalUser += 1;
-    for(let i=0;i<60;i++){
-        if(userResult[i]) cloudData.achieveCount[i]++;
-    }
-    cloudData.scoreList.push(myScore);
-    setCloudData();
+        // 2. 累加
+        cloudData.totalUser += 1;
+        for(let i=0;i<60;i++){
+            if(userResult[i]) cloudData.achieveCount[i]++;
+        }
+        cloudData.scoreList.push(myScore);
+
+        // 3. 提交
+        setCloudData();
+
+        // 4. 显示结果
+        showResultPage(myScore);
+    })
+    .catch(e=>{
+        console.error("❌ 结算读数据失败：", e);
+        showResultPage(myScore); // 即使失败也显示本地结果
+    });
 }
 
-// 结果页渲染
 function showResultPage(score){
     document.getElementById("answerPage").style.display = "none";
     document.getElementById("resultPage").style.display = "block";
@@ -421,7 +451,6 @@ function showResultPage(score){
     document.getElementById("achList").innerHTML = html;
 }
 
-// 保存图片
 function saveResultImage(){
     html2canvas(document.getElementById("saveBox"),{scale:2,backgroundColor:"#0f1118"})
     .then(canvas=>{
