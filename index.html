@@ -269,7 +269,7 @@ let userResult = new Array(60).fill(false);
 userResult[0] = true;
 let userName = "";
 
-// 云端全局统计
+// 云端统计
 const DB_URL = "https://jsonbin.io/raw/67f46053e41b4579491a0595";
 const PUT_URL = "https://jsonbin.io/b/67f46053e41b4579491a0595";
 let cloudData = {
@@ -278,23 +278,23 @@ let cloudData = {
     scoreList: []
 };
 
-// 读取云端数据
-async function getCloudData(){
-    try{
-        let res = await fetch(DB_URL);
-        cloudData = await res.json();
-    }catch(e){
+// 读取云端（失败不卡）
+function getCloudData(){
+    fetch(DB_URL)
+    .then(res=>res.json())
+    .then(data=>{ cloudData = data; })
+    .catch(e=>{
         cloudData = {totalUser:0,achieveCount:Array(60).fill(0),scoreList:[]};
-    }
+    });
 }
 
-// 提交云端数据
-async function setCloudData(){
-    await fetch(PUT_URL,{
+// 上传云端（后台悄悄做，失败不影响）
+function setCloudData(){
+    fetch(PUT_URL,{
         method:"PUT",
         headers:{"Content-Type":"application/json"},
         body:JSON.stringify(cloudData)
-    })
+    }).catch(e=>{});
 }
 
 function startTest(){
@@ -303,7 +303,8 @@ function startTest(){
     userName = nick;
     document.getElementById("startPage").style.display = "none";
     document.getElementById("answerPage").style.display = "block";
-    getCloudData().then(renderQues);
+    getCloudData();
+    renderQues();
 }
 
 function renderQues(){
@@ -311,7 +312,7 @@ function renderQues(){
     let item = achData[nowIndex];
     let box = document.getElementById("qContainer");
 
-    // 最后一题
+    // 最后一题（59）
     if(nowIndex === 59){
         box.innerHTML = `
         <div class="q-box-wrapper">
@@ -319,8 +320,8 @@ function renderQues(){
                 <div class="q-title">${item.name}</div>
                 <div class="q-desc">${item.desc}</div>
                 <div class="btn-row">
-                    <button class="opt-btn yes-btn" onclick="selectLastYes()">已达成</button>
-                    <button class="opt-btn no-btn" onclick="selectLastNo()">未达成</button>
+                    <button class="opt-btn yes-btn" onclick="lastYes()">已达成</button>
+                    <button class="opt-btn no-btn" onclick="lastNo()">未达成</button>
                 </div>
                 <div class="back-row">
                     <button class="back-btn" onclick="goBack()">← 返回上一题</button>
@@ -345,7 +346,7 @@ function renderQues(){
         return;
     }
 
-    // 中间题目
+    // 中间题
     box.innerHTML = `
     <div class="q-box-wrapper">
         <div class="q-box">
@@ -362,37 +363,39 @@ function renderQues(){
     </div>`;
 }
 
-// 普通题选择
-function selectYes(){userResult[nowIndex]=true;next();}
-function selectNo(){userResult[nowIndex]=false;next();}
-function next(){nowIndex++;renderQues();}
+// 普通题
+function selectYes(){ userResult[nowIndex]=true; nextPage(); }
+function selectNo(){ userResult[nowIndex]=false; nextPage(); }
+function nextPage(){ nowIndex++; renderQues(); }
+function goBack(){ if(nowIndex>0){ nowIndex--; renderQues(); } }
 
-// 最后一题选择 → 直接自动提交
-async function selectLastYes(){
-    userResult[nowIndex] = true;
-    await submitAll();
+// 最后一题：直接算分+跳结果，不同步等网络
+function lastYes(){
+    userResult[59]=true;
+    finishAndShow();
 }
-async function selectLastNo(){
-    userResult[nowIndex] = false;
-    await submitAll();
+function lastNo(){
+    userResult[59]=false;
+    finishAndShow();
 }
 
-function goBack(){if(nowIndex>0){nowIndex--;renderQues();}}
-
-// 自动提交并跳转结果
-async function submitAll(){
+// 结算：本地立刻显示，后台异步上传
+function finishAndShow(){
     let myScore = userResult.filter(v=>v).length;
+
+    // 先立刻显示结果（不卡）
+    showResultPage(myScore);
+
+    // 后台悄悄更新云端（失败不影响）
     cloudData.totalUser += 1;
     for(let i=0;i<60;i++){
         if(userResult[i]) cloudData.achieveCount[i]++;
     }
     cloudData.scoreList.push(myScore);
-    await setCloudData();
-    await getCloudData();
-    showResultPage(myScore);
+    setCloudData();
 }
 
-// 结果页
+// 结果页渲染
 function showResultPage(score){
     document.getElementById("answerPage").style.display = "none";
     document.getElementById("resultPage").style.display = "block";
@@ -414,7 +417,7 @@ function showResultPage(score){
             <div style="font-size:10px;color:#ccc">${item.desc}</div>
             <div style="font-size:10px;color:#aaa">${rate}%人达成</div>
         </div>`;
-    })
+    });
     document.getElementById("achList").innerHTML = html;
 }
 
@@ -426,7 +429,7 @@ function saveResultImage(){
         a.href = canvas.toDataURL("image/png");
         a.download = "地球Online成就测试结果.png";
         a.click();
-    })
+    });
 }
 </script>
 </body>
