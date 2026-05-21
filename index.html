@@ -6,175 +6,36 @@
     <title>地球Online 人生成就测试</title>
     <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: "Microsoft Yahei", sans-serif;
-        }
-        body {
-            background: #0f1118;
-            color: #f0f0f0;
-            min-height: 100vh;
-            padding: 20px 15px;
-        }
-        .wrap {
-            max-width: 750px;
-            margin: 0 auto;
-        }
-        h1 {
-            text-align: center;
-            color: #ffd700;
-            margin-bottom: 25px;
-            font-size: 24px;
-        }
-        .start-page {
-            text-align: center;
-            margin-top: 60px;
-        }
-        .nick-input {
-            padding: 14px 16px;
-            width: 240px;
-            border-radius: 10px;
-            border: none;
-            font-size: 16px;
-            margin-bottom: 20px;
-            text-align: center;
-        }
-        .start-btn {
-            padding: 14px 30px;
-            background: #ffd700;
-            color: #000;
-            border: none;
-            border-radius: 10px;
-            font-size: 16px;
-            cursor: pointer;
-        }
-        .progress-bar {
-            text-align: center;
-            color: #999;
-            margin-bottom: 20px;
-        }
-        .q-box-wrapper {
-            animation: fadeInUp 0.45s ease forwards;
-        }
-        @keyframes fadeInUp {
-            from { opacity: 0; transform: translateY(12px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        .q-box {
-            background: #1c1f29;
-            border-radius: 16px;
-            padding: 30px 25px;
-        }
-        .q-title {
-            font-size: 22px;
-            font-weight: bold;
-            line-height: 1.6;
-            margin-bottom: 10px;
-            color: #fff;
-        }
-        .q-desc {
-            font-size: 15px;
-            color: #ccc;
-            line-height: 1.6;
-            margin-bottom: 20px;
-        }
-        .btn-row {
-            display: flex;
-            gap: 16px;
-            margin-bottom: 12px;
-        }
-        .back-row {
-            text-align: center;
-            margin-top: 10px;
-        }
-        .back-btn {
-            background: #444;
-            color: #fff;
-            border: none;
-            padding: 10px 22px;
-            border-radius: 8px;
-            cursor: pointer;
-        }
-        .single-btn-row{
-            display:flex;
-            justify-content:center;
-        }
-        .opt-btn {
-            flex: 1;
-            border: none;
-            padding: 14px 0;
-            border-radius: 10px;
-            font-size: 16px;
-            cursor: pointer;
-            transition: 0.2s;
-        }
-        .yes-btn {
-            background: #ffd700;
-            color: #000;
-        }
-        .no-btn {
-            background: #333846;
-            color: #fff;
-        }
-        .single-yes{
-            width:200px;
-        }
-        .result-page {
-            display: none;
-        }
-        .result-head {
-            text-align: center;
-            color: #ffffff;
-            font-size: 22px;
-            margin-bottom: 10px;
-            font-weight:bold;
-        }
-        .total-info {
-            text-align: center;
-            margin-bottom: 8px;
-            font-size: 16px;
-            color:#eee;
-        }
-        .rank-info {
-            text-align: center;
-            font-size: 16px;
-            color: #ffd700;
-            font-weight: bold;
-            margin-bottom: 25px;
-        }
-        .ach-list {
-            display: grid;
-            grid-template-columns: repeat(6, 1fr);
-            gap: 8px;
-        }
-        .ach-item {
-            background: #1c1f29;
-            padding: 8px;
-            border-radius: 6px;
-            font-size: 11px;
-            color:#eee;
-            line-height: 1.4;
-        }
-        .done {
-            border: 1px solid #ffd700;
-        }
-        .undone {
-            opacity: 0.55;
-        }
-        .save-img-btn {
-            display: block;
-            width: 100%;
-            margin-top: 25px;
-            padding: 15px;
-            background: #ffd700;
-            color: #000;
-            border: none;
-            border-radius: 10px;
-            font-size: 17px;
-            cursor: pointer;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: "Microsoft Yahei", sans-serif; }
+        body { background: #0f1118; color: #f0f0f0; min-height: 100vh; padding: 20px 15px; }
+        .wrap { max-width: 750px; margin: 0 auto; }
+        h1 { text-align: center; color: #ffd700; margin-bottom: 25px; font-size: 24px; }
+        .start-page { text-align: center; margin-top: 60px; }
+        .nick-input { padding: 14px 16px; width: 240px; border-radius: 10px; border: none; font-size: 16px; margin-bottom: 20px; text-align: center; }
+        .start-btn { padding: 14px 30px; background: #ffd700; color: #000; border: none; border-radius: 10px; font-size: 16px; cursor: pointer; }
+        .progress-bar { text-align: center; color: #999; margin-bottom: 20px; }
+        .q-box-wrapper { animation: fadeInUp 0.45s ease forwards; }
+        @keyframes fadeInUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+        .q-box { background: #1c1f29; border-radius: 16px; padding: 30px 25px; }
+        .q-title { font-size: 22px; font-weight: bold; line-height: 1.6; margin-bottom: 10px; color: #fff; }
+        .q-desc { font-size: 15px; color: #ccc; line-height: 1.6; margin-bottom: 20px; }
+        .btn-row { display: flex; gap: 16px; margin-bottom: 12px; }
+        .back-row { text-align: center; margin-top: 10px; }
+        .back-btn { background: #444; color: #fff; border: none; padding: 10px 22px; border-radius: 8px; cursor: pointer; }
+        .single-btn-row { display: flex; justify-content: center; }
+        .opt-btn { flex: 1; border: none; padding: 14px 0; border-radius: 10px; font-size: 16px; cursor: pointer; transition: 0.2s; }
+        .yes-btn { background: #ffd700; color: #000; }
+        .no-btn { background: #333846; color: #fff; }
+        .single-yes { width: 200px; }
+        .result-page { display: none; }
+        .result-head { text-align: center; font-size: 22px; margin-bottom: 10px; font-weight: bold; color: #fff; }
+        .total-info { text-align: center; margin-bottom: 8px; font-size: 16px; color: #eee; }
+        .rank-info { text-align: center; font-size: 16px; color: #ffd700; font-weight: bold; margin-bottom: 25px; }
+        .ach-list { display: grid; grid-template-columns: repeat(6, 1fr); gap: 8px; }
+        .ach-item { background: #1c1f29; padding: 8px; border-radius: 6px; font-size: 11px; color: #eee; line-height: 1.4; }
+        .done { border: 1px solid #ffd700; }
+        .undone { opacity: 0.55; }
+        .save-img-btn { display: block; width: 100%; margin-top: 25px; padding: 15px; background: #ffd700; color: #000; border: none; border-radius: 10px; font-size: 17px; cursor: pointer; }
     </style>
 </head>
 <body>
@@ -201,6 +62,7 @@
 </div>
 
 <script>
+// ==================== 成就数据 ====================
 const achData = [
     {name:"主角登场",desc:"成功注册并登录地球Online服务器"},
     {name:"亲密羁绊",desc:"完成婚姻系统绑定，缔结永久伴侣关系"},
@@ -264,47 +126,48 @@ const achData = [
     {name:"勇敢独行",desc:"独自出门远行游玩无任何人陪同"}
 ];
 
+// ==================== 全局状态 ====================
 let nowIndex = 0;
 let userResult = new Array(60).fill(false);
-userResult[0] = true;
+userResult[0] = true;   // 第1项默认达成（可按需调整）
 let userName = "";
 
-// ---------- JSONBin 配置 ----------
-const BIN_ID = "6a0ede836610dd3ae87f9842";
-const API_KEY = "$2a$10$R5U1Ye4KegPDlK.IcolWuuj2pDKsJTscsywjousj7J4a5w.v3Q/BS"; // 去jsonbin.io后台生成
-const DB_URL = `https://jsonbin.io/raw/${BIN_ID}?r=${Math.random()}`; // 防缓存
-const PUT_URL = `https://jsonbin.io/b/${BIN_ID}`;
-// -------------------------------------------------------
+// ==================== JSONBin v3 配置（请替换成你自己的 Bin ID 和 API Key）====================
+const BIN_ID = "6a0ef8a86877513b27abc268";                // 替换为你的 Bin ID
+const API_KEY = "$2a$10$R5U1Ye4KegPDlK.IcolWuuj2pDKsJTscsywjousj7J4a5w.v3Q/BS";       // 替换为你的 API Key（Master Key）
+const DB_URL = `https://api.jsonbin.io/v3/b/${BIN_ID}/latest`;   // v3 读取端点
+const PUT_URL = `https://api.jsonbin.io/v3/b/${BIN_ID}`;         // v3 写入端点
 
+// 云端数据结构（初始值）
 let cloudData = {
     totalUser: 0,
     achieveCount: Array(60).fill(0),
     scoreList: []
 };
 
-// 读取云端（带防缓存+错误日志）
+// ==================== 云函数 ====================
+// 读取云端最新数据
 function getCloudData(){
     fetch(DB_URL, {
         method: "GET",
-        headers: {
-            "X-Master-Key": API_KEY
-        }
+        headers: { "X-Master-Key": API_KEY }
     })
     .then(res => {
         if (!res.ok) throw new Error("读取失败：" + res.status);
         return res.json();
     })
     .then(data => {
-        cloudData = data;
-        console.log("✅ 读取成功：", cloudData);
+        // v3 结构: { record: {...}, metadata: {...} }
+        cloudData = data.record;
+        console.log("✅ 云端数据读取成功", cloudData);
     })
     .catch(e => {
-        console.error("❌ 读取失败：", e);
-        cloudData = {totalUser:0, achieveCount:Array(60).fill(0), scoreList:[]};
+        console.error("❌ 读取云端失败，将使用本地初始数据", e);
+        // 保留默认值，不覆盖可能已有的 cloudData
     });
 }
 
-// 上传云端（带认证+错误日志）
+// 上传数据到云端
 function setCloudData(){
     fetch(PUT_URL, {
         method: "PUT",
@@ -316,23 +179,24 @@ function setCloudData(){
     })
     .then(res => {
         if (!res.ok) throw new Error("提交失败：" + res.status);
-        console.log("✅ 提交成功");
+        return res.json();
     })
-    .catch(e => {
-        console.error("❌ 提交失败：", e);
-    });
+    .then(() => console.log("✅ 数据提交成功"))
+    .catch(e => console.error("❌ 提交失败", e));
 }
 
+// ==================== 开始测试 ====================
 function startTest(){
     let nick = document.getElementById("nickInput").value.trim();
-    if(!nick){alert("请输入昵称");return;}
+    if(!nick) { alert("请输入昵称"); return; }
     userName = nick;
     document.getElementById("startPage").style.display = "none";
     document.getElementById("answerPage").style.display = "block";
-    getCloudData();
-    setTimeout(renderQues, 300); // 等数据加载
+    getCloudData();          // 先尝试读取最新数据
+    setTimeout(renderQues, 300);  // 留一点时间给网络请求
 }
 
+// ==================== 题目渲染 ====================
 function renderQues(){
     document.getElementById("progressText").innerText = `进度：${nowIndex+1}/60`;
     let item = achData[nowIndex];
@@ -386,64 +250,67 @@ function renderQues(){
     </div>`;
 }
 
-function selectYes(){ userResult[nowIndex]=true; nextPage(); }
-function selectNo(){ userResult[nowIndex]=false; nextPage(); }
+function selectYes(){ userResult[nowIndex] = true; nextPage(); }
+function selectNo(){ userResult[nowIndex] = false; nextPage(); }
 function nextPage(){ nowIndex++; renderQues(); }
-function goBack(){ if(nowIndex>0){ nowIndex--; renderQues(); } }
+function goBack(){ if(nowIndex > 0){ nowIndex--; renderQues(); } }
 
-function lastYes(){ userResult[59]=true; finishAndShow(); }
-function lastNo(){ userResult[59]=false; finishAndShow(); }
+function lastYes(){ userResult[59] = true; finishAndShow(); }
+function lastNo(){ userResult[59] = false; finishAndShow(); }
 
-// 结算：先读最新 → 累加 → 提交 → 显示
+// ==================== 结算与提交 ====================
 function finishAndShow(){
-    let myScore = userResult.filter(v=>v).length;
+    let myScore = userResult.filter(v => v).length;
 
-    // 1. 先拿最新数据（防止覆盖别人）
+    // 再次读取最新云端数据，防止覆盖他人的提交
     fetch(DB_URL, {
         method: "GET",
         headers: { "X-Master-Key": API_KEY }
     })
-    .then(res=>res.json())
-    .then(latestData=>{
-        cloudData = latestData;
+    .then(res => res.json())
+    .then(data => {
+        cloudData = data.record;   // 取最新 record
 
-        // 2. 累加
+        // 累加本次成绩
         cloudData.totalUser += 1;
-        for(let i=0;i<60;i++){
+        for(let i = 0; i < 60; i++){
             if(userResult[i]) cloudData.achieveCount[i]++;
         }
         cloudData.scoreList.push(myScore);
 
-        // 3. 提交
+        // 上传更新后的数据
         setCloudData();
 
-        // 4. 显示结果
+        // 显示结果页面
         showResultPage(myScore);
     })
-    .catch(e=>{
-        console.error("❌ 结算读数据失败：", e);
-        showResultPage(myScore); // 即使失败也显示本地结果
+    .catch(e => {
+        console.error("❌ 结算时读取云端失败，将使用本地已有数据展示", e);
+        // 即使失败也展示，但人数可能不准确
+        showResultPage(myScore);
     });
 }
 
+// ==================== 结果页面 ====================
 function showResultPage(score){
     document.getElementById("answerPage").style.display = "none";
     document.getElementById("resultPage").style.display = "block";
+
     let total = cloudData.totalUser;
     document.getElementById("totalInfo").innerText = `${userName}，你完成${score}项成就 | 已有${total}人参与测试`;
 
     let arr = cloudData.scoreList;
-    let winNum = arr.filter(s=>s < score).length;
-    let per = arr.length>0 ? Math.round(winNum/arr.length*100) : 0;
+    let winNum = arr.filter(s => s < score).length;
+    let per = arr.length > 0 ? Math.round(winNum / arr.length * 100) : 0;
     document.getElementById("rankInfo").innerText = `🎉 你的成就超越${per}%参与玩家`;
 
     let html = "";
-    achData.forEach((item,idx)=>{
+    achData.forEach((item, idx) => {
         let done = userResult[idx];
-        let rate = total>0 ? (cloudData.achieveCount[idx]/total*100).toFixed(1) : 0;
+        let rate = total > 0 ? (cloudData.achieveCount[idx] / total * 100).toFixed(1) : 0;
         html += `
-        <div class="ach-item ${done?'done':'undone'}">
-            <div>${done?"✅":"❌"}${item.name}</div>
+        <div class="ach-item ${done ? 'done' : 'undone'}">
+            <div>${done ? "✅" : "❌"}${item.name}</div>
             <div style="font-size:10px;color:#ccc">${item.desc}</div>
             <div style="font-size:10px;color:#aaa">${rate}%人达成</div>
         </div>`;
@@ -451,9 +318,10 @@ function showResultPage(score){
     document.getElementById("achList").innerHTML = html;
 }
 
+// ==================== 保存图片 ====================
 function saveResultImage(){
-    html2canvas(document.getElementById("saveBox"),{scale:2,backgroundColor:"#0f1118"})
-    .then(canvas=>{
+    html2canvas(document.getElementById("saveBox"), { scale: 2, backgroundColor: "#0f1118" })
+    .then(canvas => {
         let a = document.createElement("a");
         a.href = canvas.toDataURL("image/png");
         a.download = "地球Online成就测试结果.png";
